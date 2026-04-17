@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Baby Sleep - Prototype</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { 
+  font-family: 'Microsoft YaHei', sans-serif;
+  background: #1a1a2e; 
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+}
+#game { 
+  width: 375px; height: 667px; 
+  margin: 20px auto; 
+  position: relative; 
+  overflow: hidden;
+  border-radius: 20px;
+  box-shadow: 0 0 40px rgba(0,0,0,0.5);
+}
+
+/* ===== Screens ===== */
+.screen { 
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+  display: none; 
+  flex-direction: column;
+}
+.screen.active { display: flex; }
+
+/* ===== Main Menu ===== */
+#mainMenu {
+  background: linear-gradient(180deg, #1a0533 0%, #2d1b69 40%, #4a2c8a 70%, #6b3fa0 100%);
+  align-items: center; justify-content: center;
+}
+#mainMenu .stars-bg {
+  position: absolute; top: 0; left: 0; width: 100%; height: 60%;
+}
+.star-dot {
+  position: absolute; width: 3px; height: 3px; background: #fff; border-radius: 50%;
+  animation: twinkle 2s infinite alternate;
+}
+@keyframes twinkle { 0% { opacity: 0.3; } 100% { opacity: 1; } }
+#mainMenu .moon {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #fff8dc, #ffd700);
+  box-shadow: 0 0 30px rgba(255,215,0,0.4);
+  margin-bottom: 20px; z-index: 1;
+}
+#mainMenu h1 {
+  font-size: 36px; color: #fff; z-index: 1;
+  text-shadow: 0 0 20px rgba(255,200,100,0.5);
+  margin-bottom: 8px;
+}
+#mainMenu .subtitle {
+  font-size: 14px; color: rgba(255,255,255,0.6); z-index: 1;
+  margin-bottom: 50px;
+}
+.btn {
+  padding: 14px 50px; border-radius: 30px; border: none;
+  font-size: 18px; cursor: pointer; z-index: 1;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.btn:active { transform: scale(0.95); }
+.btn-primary {
+  background: linear-gradient(135deg, #ff9a56, #ff6b6b);
+  color: #fff; box-shadow: 0 4px 15px rgba(255,107,107,0.4);
+}
+.btn-secondary {
+  background: rgba(255,255,255,0.15); color: #fff;
+  border: 1px solid rgba(255,255,255,0.3);
+  padding: 10px 30px; font-size: 14px; margin-top: 15px;
+}
+
+/* ===== Level Select ===== */
+#levelSelect {
+  background: linear-gradient(180deg, #1a0533, #2d1b69);
+}
+#levelSelect .header {
+  padding: 20px; text-align: center; color: #fff;
+}
+#levelSelect .header h2 { font-size: 22px; margin-bottom: 5px; }
+#levelSelect .header p { font-size: 12px; color: rgba(255,255,255,0.5); }
+.level-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 15px; padding: 15px 25px; overflow-y: auto; flex: 1;
+}
+.level-cell {
+  aspect-ratio: 1; border-radius: 15px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  cursor: pointer; position: relative;
+  transition: transform 0.15s;
+}
+.level-cell:active { transform: scale(0.93); }
+.level-cell.unlocked {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  box-shadow: 0 3px 10px rgba(102,126,234,0.3);
+}
+.level-cell.cleared {
+  background: linear-gradient(135deg, #43e97b, #38f9d7);
+  box-shadow: 0 3px 10px rgba(67,233,123,0.3);
+}
+.level-cell.locked {
+  background: rgba(255,255,255,0.08);
+}
+.level-cell.dream.unlocked {
+  background: linear-gradient(135deg, #a855f7, #6366f1);
+}
+.level-cell.dream.cleared {
+  background: linear-gradient(135deg, #c084fc, #818cf8);
+}
+.level-num { font-size: 22px; font-weight: bold; color: #fff; }
+.level-name { font-size: 9px; color: rgba(255,255,255,0.8); margin-top: 3px; }
+.level-stars { margin-top: 5px; font-size: 12px; letter-spacing: 2px; }
+.level-lock { font-size: 24px; opacity: 0.4; }
+.back-btn {
+  position: absolute; top: 18px; left: 15px;
+  background: rgba(255,255,255,0.15); border: none; color: #fff;
+  width: 36px; height: 36px; border-radius: 50%;
+  font-size: 18px; cursor: pointer; z-index: 10;
+}
+
+/* ===== Room Level ===== */
+#roomLevel {
+  background: linear-gradient(180deg, #87CEEB 0%, #87CEEB 15%, #f5e6d3 15%, #f5e6d3 100%);
+}
+.room-bg {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+}
+/* Wall */
+.wall { position: absolute; top: 15%; left: 0; width: 100%; height: 85%; background: #f5e6d3; }
+.floor { position: absolute; bottom: 0; left: 0; width: 100%; height: 15%; background: #c4a882; }
+.baseboard { position: absolute; bottom: 15%; left: 0; width: 100%; height: 2%; background: #8b7355; }
+
+/* Furniture */
+.room-obj {
+  position: absolute; display: flex; align-items: center; justify-content: center;
+  transition: all 0.3s;
+}
+/* Bed */
+.bed { bottom: 16%; left: 10%; width: 55%; height: 22%; background: #8B4513; border-radius: 8px; }
+.mattress { position: absolute; top: 5%; left: 3%; width: 94%; height: 70%; background: #fff; border-radius: 5px; }
+.pillow { position: absolute; top: 10%; left: 8%; width: 25%; height: 40%; background: #ffe4e1; border-radius: 10px; }
+.blanket { position: absolute; bottom: 10%; left: 15%; width: 75%; height: 50%; background: #87CEEB; border-radius: 5px; opacity: 0.8; }
+/* Baby */
+.baby {
+  position: absolute; bottom: 25%; left: 18%; width: 45px; height: 45px; z-index: 5;
+}
+.baby-body { width: 45px; height: 35px; background: #ffdbac; border-radius: 50%; position: relative; }
+.baby-face { position: absolute; top: 5px; left: 50%; transform: translateX(-50%); }
+.baby-eye { width: 4px; height: 2px; background: #333; border-radius: 50%; display: inline-block; margin: 0 3px; }
+.baby-mouth { width: 8px; height: 4px; border-bottom: 2px solid #e88; border-radius: 0 0 50% 50%; margin: 3px auto 0; }
+.baby-zzz {
+  position: absolute; top: -15px; right: -10px;
+  font-size: 14px; color: #6b5ce7; font-weight: bold;
+  animation: zzz 2s infinite;
+}
+@keyframes zzz { 0%,100% { opacity: 0.3; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-5px); } }
+
+/* Window */
+.window-frame { 
+  top: 18%; right: 8%; width: 25%; height: 22%; 
+  background: #87CEEB; border: 4px solid #8b7355; border-radius: 3px;
+}
+.window-cross-h { position: absolute; top: 50%; left: 0; width: 100%; height: 3px; background: #8b7355; transform: translateY(-50%); }
+.window-cross-v { position: absolute; top: 0; left: 50%; width: 3px; height: 100%; background: #8b7355; transform: translateX(-50%); }
+.curtain-l { position: absolute; top: -2px; left: -15px; width: 18px; height: 105%; background: #d4a0a0; border-radius: 0 0 5px 5px; }
+.curtain-r { position: absolute; top: -2px; right: -15px; width: 18px; height: 105%; background: #d4a0a0; border-radius: 0 0 5px 5px; }
+
+/* Door */
+.door { 
+  top: 20%; left: 3%; width: 15%; height: 35%;
+  background: #a0522d; border-radius: 3px; border: 2px solid #8b4513;
+}
+.door-knob { position: absolute; right: 8px; top: 55%; width: 8px; height: 8px; background: #ffd700; border-radius: 50%; }
+
+/* Table */
+.table { bottom: 16%; right: 5%; width: 28%; height: 16%; background: #a0522d; border-radius: 5px 5px 0 0; }
+/* Phone on table */
+.phone {
+  position: absolute; bottom: 32%; right: 10%; width: 20px; height: 35px;
+  background: #333; border-radius: 4px; z-index: 3;
+}
+.phone-screen { position: absolute; top: 3px; left: 2px; right: 2px; bottom: 6px; background: #222; border-radius: 2px; }
+/* Vase on table */
+.vase {
+  position: absolute; bottom: 32%; right: 22%; z-index: 3;
+}
+.vase-body { width: 18px; height: 28px; background: #4682B4; border-radius: 5px 5px 8px 8px; position: relative; }
+.vase-flower { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 12px; height: 12px; background: #ff6b6b; border-radius: 50%; }
+
+/* TV */
+.tv {
+  position: absolute; top: 25%; left: 25%; width: 50%; height: 18%;
+  background: #222; border-radius: 5px; border: 3px solid #333;
+}
+.tv-screen { position: absolute; top: 4px; left: 4px; right: 4px; bottom: 8px; background: #111; border-radius: 2px; }
+.tv-stand { position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); width: 20px; height: 8px; background: #333; }
+
+/* Alarm */
+.alarm {
+  position: absolute; bottom: 32.5%; right: 28%; z-index: 3;
+  width: 22px; height: 22px; background: #ff6347; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.alarm-face { width: 16px; height: 16px; background: #fff; border-radius: 50%; position: relative; }
+.alarm-hand { position: absolute; top: 50%; left: 50%; width: 1px; height: 6px; background: #333; transform-origin: bottom center; transform: translateX(-50%) rotate(30deg); }
+
+/* Light */
+.ceiling-light {
+  position: absolute; top: 15%; left: 50%; transform: translateX(-50%);
+  width: 40px; height: 20px; z-index: 3;
+}
+.light-fixture { width: 40px; height: 15px; background: #ddd; border-radius: 0 0 20px 20px; }
+.light-glow {
+  position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
+  width: 60px; height: 60px; background: radial-gradient(circle, rgba(255,255,200,0.3), transparent);
+  border-radius: 50%;
+}
+
+/* HUD */
+.hud { 
+  position: absolute; top: 0; left: 0; width: 100%; 
+  padding: 12px 15px; z-index: 20;
+  background: linear-gradient(180deg, rgba(0,0,0,0.5), transparent);
+}
+.hud-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.hud-label { font-size: 11px; color: rgba(255,255,255,0.8); }
+.hud-value { font-size: 13px; color: #fff; font-weight: bold; }
+.sleep-bar-bg { 
+  flex: 1; height: 12px; background: rgba(0,0,0,0.3); 
+  border-radius: 6px; margin: 0 10px; overflow: hidden;
+}
+.sleep-bar-fill {
+  height: 100%; border-radius: 6px;
+  background: linear-gradient(90deg, #ff6b6b, #43e97b);
+  transition: width 0.5s;
+}
+.timer { 
+  font-size: 20px; color: #fff; font-weight: bold; 
+  text-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+.level-title {
+  font-size: 12px; color: rgba(255,255,255,0.7); text-align: center;
+}
+.pause-btn {
+  background: rgba(255,255,255,0.2); border: none; color: #fff;
+  width: 30px; height: 30px; border-radius: 50%; font-size: 14px; cursor: pointer;
+}
+
+/* Event overlays */
+.event-popup {
+  position: absolute; z-index: 15;
+  animation: eventAppear 0.3s ease-out;
+}
+@keyframes eventAppear { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.event-timer-ring {
+  position: absolute; top: -5px; right: -5px; width: 22px; height: 22px;
+  border-radius: 50%; border: 3px solid #ff6b6b;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; color: #ff6b6b; font-weight: bold; background: rgba(0,0,0,0.6);
+}
+.event-hint {
+  position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%);
+  font-size: 9px; color: #fff; background: rgba(0,0,0,0.6);
+  padding: 2px 6px; border-radius: 8px; white-space: nowrap;
+}
+.event-glow {
+  position: absolute; top: -10px; left: -10px; right: -10px; bottom: -10px;
+  border-radius: 50%; border: 2px solid rgba(255,107,107,0.6);
+  animation: pulse 1s infinite;
+}
+@keyframes pulse { 0%,100% { opacity: 0.4; transform: scale(1); } 50% { opacity: 1; transform: scale(1.1); } }
+
+/* Specific event animations */
+@keyframes shake { 0%,100% { transform: rotate(0deg); } 25% { transform: rotate(-5deg); } 75% { transform: rotate(5deg); } }
+@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+.shaking { animation: shake 0.3s infinite; }
+.floating { animation: float 1.5s infinite; }
+
+/* Mosquito */
+.mosquito-sprite {
+  width: 25px; height: 25px; font-size: 20px;
+  animation: mosquitoFly 3s infinite;
+}
+@keyframes mosquitoFly {
+  0% { transform: translate(0,0) rotate(0deg); }
+  25% { transform: translate(30px,-20px) rotate(10deg); }
+  50% { transform: translate(-20px,10px) rotate(-5deg); }
+  75% { transform: translate(15px,25px) rotate(8deg); }
+  100% { transform: translate(0,0) rotate(0deg); }
+}
+
+/* Cat */
+.cat-sprite {
+  font-size: 28px;
+  animation: catWalk 2s infinite;
+}
+@keyframes catWalk { 0%,100% { transform: translateX(0); } 50% { transform: translateX(10px); } }
+
+/* Lightning */
+.lightning {
+  position: absolute; top: 0; right: 8%; width: 25%; height: 15%;
+  z-index: 16; pointer-events: none;
+}
+.lightning-bolt {
+  font-size: 40px; color: #fff700;
+  text-shadow: 0 0 15px #fff700, 0 0 30px #ff0;
+  animation: flash 0.5s infinite;
+}
+@keyframes flash { 0%,100% { opacity: 1; } 50% { opacity: 0.2; } }
+
+/* ===== Dream Level ===== */
+#dreamLevel {
+  background: linear-gradient(180deg, #0a0020 0%, #1a0533 30%, #2d1b69 60%, #4a2c8a 100%);
+}
+.dream-stars { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+.dream-cloud {
+  position: absolute; background: rgba(255,255,255,0.1); border-radius: 50px;
+}
+.dream-baby {
+  position: absolute; bottom: 30%; left: 50%; transform: translateX(-50%);
+  z-index: 5;
+}
+.dream-platform {
+  position: absolute; bottom: 25%; left: 20%; width: 60%; height: 8%;
+  background: rgba(255,255,255,0.15); border-radius: 50%;
+  box-shadow: 0 0 30px rgba(255,255,255,0.1);
+}
+
+/* Dream event elements */
+.shadow-figure {
+  font-size: 50px; opacity: 0.7;
+  animation: shadowApproach 3s infinite;
+}
+@keyframes shadowApproach { 0% { transform: scale(0.5); opacity: 0.3; } 100% { transform: scale(1.2); opacity: 0.8; } }
+.falling-star {
+  font-size: 30px;
+  animation: starFall 2s infinite;
+}
+@keyframes starFall { 0% { transform: translateY(-20px); } 100% { transform: translateY(20px); } }
+.dream-monster-sprite {
+  font-size: 45px;
+  animation: monsterApproach 3s infinite;
+}
+@keyframes monsterApproach { 0% { transform: scale(0.6) translateX(20px); } 100% { transform: scale(1.1) translateX(-5px); } }
+.music-notes {
+  display: flex; gap: 15px;
+}
+.music-note {
+  font-size: 24px; cursor: pointer;
+  transition: transform 0.2s, opacity 0.2s;
+}
+.music-note:hover { transform: scale(1.3); }
+.music-note.clicked { opacity: 0.3; transform: scale(0.5); }
+
+/* ===== Result Panel ===== */
+.result-overlay {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.7); z-index: 50;
+  display: none; align-items: center; justify-content: center;
+}
+.result-overlay.active { display: flex; }
+.result-card {
+  width: 85%; background: #fff; border-radius: 20px;
+  padding: 30px 25px; text-align: center;
+  animation: slideUp 0.4s ease-out;
+}
+@keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.result-title { font-size: 28px; font-weight: bold; margin-bottom: 15px; }
+.result-title.success { color: #43e97b; }
+.result-title.fail { color: #ff6b6b; }
+.result-stars { font-size: 40px; margin: 15px 0; letter-spacing: 8px; }
+.result-info { font-size: 14px; color: #666; margin-bottom: 25px; }
+.result-btn {
+  padding: 12px 35px; border-radius: 25px; border: none;
+  font-size: 16px; cursor: pointer; margin: 0 8px;
+}
+.result-btn.retry { background: #ff6b6b; color: #fff; }
+.result-btn.next { background: linear-gradient(135deg, #43e97b, #38f9d7); color: #fff; }
+.result-btn.back { background: #ddd; color: #555; }
+
+/* ===== Demo Controls ===== */
+.demo-controls {
+  position: absolute; bottom: 10px; left: 0; width: 100%;
+  display: flex; justify-content: center; gap: 6px;
+  z-index: 100; padding: 0 10px;
+}
+.demo-btn {
+  padding: 5px 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.3);
+  background: rgba(0,0,0,0.5); color: #fff; font-size: 10px;
+  cursor: pointer;
+}
+.demo-btn:active { background: rgba(255,255,255,0.2); }
+.demo-badge {
+  position: absolute; top: 8px; right: 10px; z-index: 100;
+  background: rgba(0,0,0,0.5); color: rgba(255,255,255,0.5);
+  padding: 3px 8px; border-radius: 10px; font-size: 9px;
+}
+</style>
+</head>
+<body>
+
+<div id="game">
+  <div class="demo-badge">PROTOTYPE DEMO</div>
+
+  <!-- ===== Main Menu ===== -->
+  <div id="mainMenu" class="screen active">
+    <div class="stars-bg" id="menuStars"></div>
+    <div class="moon"></div>
+    <h1>Baby Sleep</h1>
+    <div class="subtitle">- Shh... Keep the baby asleep -</div>
+    <button class="btn btn-primary" onclick="showScreen('levelSelect')">START</button>
+    <button class="btn btn-secondary" onclick="alert('Settings coming soon')">SETTINGS</button>
+  </div>
+
+  <!-- ===== Level Select ===== -->
+  <div id="levelSelect" class="screen">
+    <button class="back-btn" onclick="showScreen('mainMenu')">&#8249;</button>
+    <div class="header">
+      <h2>SELECT LEVEL</h2>
+      <p>Complete levels to unlock the next</p>
+    </div>
+    <div class="level-grid" id="levelGrid"></div>
+  </div>
+
+  <!-- ===== Room Level ===== -->
+  <div id="roomLevel" class="screen">
+    <!-- HUD -->
+    <div class="hud">
+      <div class="hud-row">
+        <button class="pause-btn" onclick="showScreen('levelSelect')">| |</button>
+        <div class="level-title" id="roomLevelTitle">Level 1 - Night One</div>
+        <div class="timer" id="roomTimer">60</div>
+      </div>
+      <div class="hud-row">
+        <span class="hud-label">ZZZ</span>
+        <div class="sleep-bar-bg">
+          <div class="sleep-bar-fill" id="sleepBar" style="width:100%"></div>
+        </div>
+        <span class="hud-value" id="sleepValue">100</span>
+      </div>
+    </div>
+
+    <!-- Room Scene -->
+    <div class="room-bg">
+      <div class="wall"></div>
+      <div class="floor"></div>
+      <div class="baseboard"></div>
+    </div>
+
+    <!-- TV -->
+    <div class="room-obj tv" id="tv">
+      <div class="tv-screen"></div>
+      <div class="tv-stand"></div>
+    </div>
+
+    <!-- Ceiling Light -->
+    <div class="ceiling-light">
+      <div class="light-fixture"></div>
+      <div class="light-glow" id="lightGlow"></div>
+    </div>
+
+    <!-- Window -->
+    <div class="room-obj window-frame" id="window">
+      <div class="window-cross-h"></div>
+      <div class="window-cross-v"></div>
+      <div class="curtain-l"></div>
+      <div class="curtain-r"></div>
+    </div>
+
+    <!-- Door -->
+    <div class="room-obj door" id="door">
+      <div class="door-knob"></div>
+    </div>
+
+    <!-- Bed -->
+    <div class="room-obj bed">
+      <div class="mattress"></div>
+      <div class="pillow"></div>
+      <div class="blanket" id="blanket"></div>
+    </div>
+
+    <!-- Baby -->
+    <div class="baby" id="baby">
+      <div class="baby-body">
+        <div class="baby-face">
+          <span class="baby-eye"></span>
+          <span class="baby-eye"></span>
+          <div class="baby-mouth" id="babyMouth"></div>
+        </div>
+      </div>
+      <div class="baby-zzz" id="babyZzz">Z<small>z</small>z</div>
+    </div>
+
+    <!-- Table -->
+    <div class="room-obj table"></div>
+
+    <!-- Phone -->
+    <div class="room-obj phone" id="phone">
+      <div class="phone-screen"></div>
+    </div>
+
+    <!-- Vase -->
+    <div class="room-obj vase" id="vase">
+      <div class="vase-body">
+        <div class="vase-flower"></div>
+      </div>
+    </div>
+
+    <!-- Alarm -->
+    <div class="room-obj alarm" id="alarm">
+      <div class="alarm-face">
+        <div class="alarm-hand"></div>
+      </div>
+    </div>
+
+    <!-- Event containers -->
+    <div id="roomEvents"></div>
+
+    <!-- Demo Controls -->
+    <div class="demo-controls">
+      <button class="demo-btn" onclick="triggerEvent('phone')">Phone</button>
+      <button class="demo-btn" onclick="triggerEvent('door')">Door</button>
+      <button class="demo-btn" onclick="triggerEvent('vase')">Vase</button>
+      <button class="demo-btn" onclick="triggerEvent('mosquito')">Mosquito</button>
+      <button class="demo-btn" onclick="triggerEvent('thunder')">Thunder</button>
+      <button class="demo-btn" onclick="triggerEvent('cat')">Cat</button>
+      <button class="demo-btn" onclick="showResult(true)">Win</button>
+      <button class="demo-btn" onclick="showResult(false)">Fail</button>
+    </div>
+
+    <!-- Result overlay -->
+    <div class="result-overlay" id="roomResult">
+      <div class="result-card">
+        <div class="result-title" id="resultTitle">SUCCESS</div>
+        <div class="result-stars" id="resultStars"></div>
+        <div class="result-info" id="resultInfo"></div>
+        <div>
+          <button class="result-btn back" onclick="showScreen('levelSelect'); hideResult()">Return</button>
+          <button class="result-btn retry" onclick="hideResult(); resetLevel()">Retry</button>
+          <button class="result-btn next" id="nextBtn" onclick="hideResult(); resetLevel()">Next</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Dream Level ===== -->
+  <div id="dreamLevel" class="screen">
+    <!-- HUD -->
+    <div class="hud">
+      <div class="hud-row">
+        <button class="pause-btn" onclick="showScreen('levelSelect')">| |</button>
+        <div class="level-title">Level 11 - Dream Entry</div>
+        <div class="timer">80</div>
+      </div>
+      <div class="hud-row">
+        <span class="hud-label">ZZZ</span>
+        <div class="sleep-bar-bg">
+          <div class="sleep-bar-fill" style="width:75%"></div>
+        </div>
+        <span class="hud-value">75</span>
+      </div>
+    </div>
+
+    <!-- Dream Scene -->
+    <div class="dream-stars" id="dreamStars"></div>
+
+    <!-- Clouds -->
+    <div class="dream-cloud" style="top:20%;left:5%;width:80px;height:30px;"></div>
+    <div class="dream-cloud" style="top:35%;right:10%;width:60px;height:25px;"></div>
+    <div class="dream-cloud" style="top:50%;left:15%;width:70px;height:28px;"></div>
+
+    <!-- Platform -->
+    <div class="dream-platform"></div>
+
+    <!-- Dream Baby -->
+    <div class="dream-baby">
+      <div class="baby-body" style="transform: scale(1.3);">
+        <div class="baby-face">
+          <span class="baby-eye"></span>
+          <span class="baby-eye"></span>
+          <div class="baby-mouth"></div>
+        </div>
+      </div>
+      <div class="baby-zzz">Z<small>z</small>z</div>
+    </div>
+
+    <!-- Dream events container -->
+    <div id="dreamEvents"></div>
+
+    <!-- Demo Controls -->
+    <div class="demo-controls">
+      <button class="demo-btn" onclick="triggerDreamEvent('shadow')">Shadow</button>
+      <button class="demo-btn" onclick="triggerDreamEvent('star')">Star Fall</button>
+      <button class="demo-btn" onclick="triggerDreamEvent('monster')">Monster</button>
+      <button class="demo-btn" onclick="triggerDreamEvent('lullaby')">Lullaby</button>
+      <button class="demo-btn" onclick="showScreen('levelSelect')">Back</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ===== Screen Management =====
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (id === 'levelSelect') buildLevelGrid();
+}
+
+// ===== Main Menu Stars =====
+function createMenuStars() {
+  const container = document.getElementById('menuStars');
+  for (let i = 0; i < 40; i++) {
+    const star = document.createElement('div');
+    star.className = 'star-dot';
+    star.style.left = Math.random() * 100 + '%';
+    star.style.top = Math.random() * 100 + '%';
+    star.style.animationDelay = Math.random() * 2 + 's';
+    star.style.width = star.style.height = (1 + Math.random() * 3) + 'px';
+    container.appendChild(star);
+  }
+}
+
+// ===== Dream Stars =====
+function createDreamStars() {
+  const container = document.getElementById('dreamStars');
+  for (let i = 0; i < 60; i++) {
+    const star = document.createElement('div');
+    star.className = 'star-dot';
+    star.style.left = Math.random() * 100 + '%';
+    star.style.top = Math.random() * 80 + '%';
+    star.style.animationDelay = Math.random() * 2 + 's';
+    star.style.width = star.style.height = (1 + Math.random() * 3) + 'px';
+    container.appendChild(star);
+  }
+}
+
+// ===== Level Select =====
+const levelData = [
+  { id:1, name:'Night One', dream:false, stars:3 },
+  { id:2, name:'Night Two', dream:false, stars:2 },
+  { id:3, name:'Night Three', dream:false, stars:1 },
+  { id:4, name:'Night Four', dream:false, stars:0, unlocked:true },
+  { id:5, name:'Night Five', dream:false, stars:-1 },
+  { id:6, name:'Night Six', dream:false, stars:-1 },
+  { id:7, name:'Night Seven', dream:false, stars:-1 },
+  { id:8, name:'Night Eight', dream:false, stars:-1 },
+  { id:9, name:'Night Nine', dream:false, stars:-1 },
+  { id:10, name:'Night Ten', dream:false, stars:-1 },
+  { id:11, name:'Dream I', dream:true, stars:-1 },
+  { id:12, name:'Dream II', dream:true, stars:-1 },
+  { id:13, name:'Dream III', dream:true, stars:-1 },
+  { id:14, name:'Dream IV', dream:true, stars:-1 },
+  { id:15, name:'Dream V', dream:true, stars:-1 },
+];
+
+function buildLevelGrid() {
+  const grid = document.getElementById('levelGrid');
+  grid.innerHTML = '';
+  levelData.forEach(lv => {
+    const cell = document.createElement('div');
+    const isUnlocked = lv.stars >= 0 || lv.unlocked;
+    const isCleared = lv.stars > 0;
+    cell.className = `level-cell ${lv.dream ? 'dream' : ''} ${isCleared ? 'cleared' : isUnlocked ? 'unlocked' : 'locked'}`;
+    
+    if (isUnlocked) {
+      cell.innerHTML = `
+        <div class="level-num">${lv.id}</div>
+        <div class="level-name">${lv.name}</div>
+        <div class="level-stars">${isCleared ? getStarStr(lv.stars) : ''}</div>
+      `;
+      cell.onclick = () => {
+        if (lv.dream) showScreen('dreamLevel');
+        else { showScreen('roomLevel'); resetLevel(); }
+      };
+    } else {
+      cell.innerHTML = `<div class="level-lock">&#128274;</div><div class="level-name">${lv.name}</div>`;
+    }
+    grid.appendChild(cell);
+  });
+}
+
+function getStarStr(n) {
+  return '<span style="color:#ffd700">' + '&#9733;'.repeat(n) + '</span>' + 
+         '<span style="color:rgba(255,255,255,0.3)">' + '&#9733;'.repeat(3-n) + '</span>';
+}
+
+// ===== Room Level Logic =====
+let sleepValue = 100;
+let timerValue = 60;
+let timerInterval = null;
+let activeEvents = [];
+
+function resetLevel() {
+  sleepValue = 100;
+  timerValue = 60;
+  updateHUD();
+  clearActiveEvents();
+  document.getElementById('babyZzz').style.display = 'block';
+  document.getElementById('babyMouth').style.borderColor = '#e88';
+  if (timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    timerValue--;
+    if (timerValue <= 0) { clearInterval(timerInterval); showResult(true); }
+    updateHUD();
+  }, 1000);
+}
+
+function updateHUD() {
+  document.getElementById('sleepBar').style.width = sleepValue + '%';
+  document.getElementById('sleepValue').textContent = sleepValue;
+  document.getElementById('roomTimer').textContent = timerValue;
+  // Color change
+  const bar = document.getElementById('sleepBar');
+  if (sleepValue > 60) bar.style.background = 'linear-gradient(90deg, #43e97b, #38f9d7)';
+  else if (sleepValue > 30) bar.style.background = 'linear-gradient(90deg, #f7971e, #ffd200)';
+  else bar.style.background = 'linear-gradient(90deg, #ff416c, #ff4b2b)';
+  // Baby expression
+  if (sleepValue < 30) {
+    document.getElementById('babyZzz').style.display = 'none';
+    document.getElementById('babyMouth').style.borderColor = '#ff4444';
+  }
+}
+
+function changeSleep(delta) {
+  sleepValue = Math.max(0, Math.min(100, sleepValue + delta));
+  updateHUD();
+  if (sleepValue <= 0) {
+    clearInterval(timerInterval);
+    showResult(false);
+  }
+}
+
+// ===== Event Triggers =====
+function triggerEvent(type) {
+  const container = document.getElementById('roomEvents');
+  let el;
+
+  switch(type) {
+    case 'phone':
+      el = createEventNode('phone_ring', '&#128241;', 'Long Press 2s', 
+        { bottom: '34%', right: '8%', width: '35px', height: '50px' });
+      el.querySelector('.event-icon').classList.add('shaking');
+      let phoneHeld = false;
+      let phoneTimer = null;
+      el.addEventListener('pointerdown', () => {
+        phoneHeld = true;
+        phoneTimer = setTimeout(() => {
+          if (phoneHeld) { resolveEvent(el, -0); }
+        }, 2000);
+      });
+      el.addEventListener('pointerup', () => { phoneHeld = false; clearTimeout(phoneTimer); });
+      autoFail(el, 5000, -15);
+      break;
+
+    case 'door':
+      el = createEventNode('door_knock', '&#128330;', 'Tap to Open',
+        { top: '22%', left: '2%', width: '65px', height: '130px' });
+      el.onclick = () => resolveEvent(el, 0);
+      autoFail(el, 5000, -15);
+      break;
+
+    case 'vase':
+      el = createEventNode('vase_fall', '&#127802;', 'Tap to Fix',
+        { bottom: '33%', right: '20%', width: '35px', height: '50px' });
+      el.querySelector('.event-icon').classList.add('shaking');
+      el.onclick = () => resolveEvent(el, 0);
+      autoFail(el, 5000, -15);
+      break;
+
+    case 'mosquito':
+      el = createEventNode('mosquito', '', 'Tap to Swat',
+        { top: '45%', left: '40%', width: '40px', height: '40px' });
+      el.querySelector('.event-icon').innerHTML = '<span class="mosquito-sprite">&#129439;</span>';
+      el.style.cursor = 'crosshair';
+      el.onclick = () => resolveEvent(el, -2);
+      autoFail(el, 4000, -20);
+      break;
+
+    case 'thunder':
+      // Lightning effect at window
+      const lightning = document.createElement('div');
+      lightning.className = 'lightning';
+      lightning.innerHTML = '<div class="lightning-bolt">&#9889;</div>';
+      document.getElementById('roomLevel').appendChild(lightning);
+      el = createEventNode('thunder', '&#9889;', 'Drag Blanket',
+        { bottom: '28%', left: '25%', width: '60px', height: '40px' });
+      el.onclick = () => { resolveEvent(el, -5); lightning.remove(); };
+      autoFail(el, 3000, -30, () => lightning.remove());
+      break;
+
+    case 'cat':
+      el = createEventNode('cat', '&#128008;', 'Drag Out',
+        { bottom: '20%', right: '40%', width: '45px', height: '45px' });
+      el.querySelector('.event-icon').innerHTML = '<span class="cat-sprite">&#128008;</span>';
+      el.onclick = () => resolveEvent(el, -3);
+      autoFail(el, 4000, -20);
+      break;
+  }
+
+  if (el) {
+    container.appendChild(el);
+    activeEvents.push(el);
+  }
+}
+
+function createEventNode(id, icon, hint, pos) {
+  const el = document.createElement('div');
+  el.className = 'event-popup';
+  el.dataset.id = id;
+  Object.assign(el.style, pos);
+  el.style.cursor = 'pointer';
+  
+  let countdown = 5;
+  el.innerHTML = `
+    <div class="event-glow"></div>
+    <div class="event-icon" style="font-size:28px;text-align:center;">${icon}</div>
+    <div class="event-timer-ring">${countdown}</div>
+    <div class="event-hint">${hint}</div>
+  `;
+  
+  const timerRing = el.querySelector('.event-timer-ring');
+  const countdownInterval = setInterval(() => {
+    countdown--;
+    timerRing.textContent = countdown;
+    if (countdown <= 0) clearInterval(countdownInterval);
+  }, 1000);
+  el._countdownInterval = countdownInterval;
+  
+  return el;
+}
+
+function resolveEvent(el, penalty) {
+  clearTimeout(el._failTimer);
+  clearInterval(el._countdownInterval);
+  changeSleep(penalty);
+  
+  // Success flash
+  el.style.transition = 'all 0.3s';
+  el.style.transform = 'scale(0)';
+  el.style.opacity = '0';
+  setTimeout(() => {
+    el.remove();
+    activeEvents = activeEvents.filter(e => e !== el);
+  }, 300);
+  
+  // Show brief success indicator
+  showFloatingText('+OK', '#43e97b', el.style.left || el.style.right, el.style.top || el.style.bottom);
+}
+
+function autoFail(el, ms, penalty, cleanup) {
+  el._failTimer = setTimeout(() => {
+    clearInterval(el._countdownInterval);
+    changeSleep(penalty);
+    el.style.transition = 'all 0.3s';
+    el.style.opacity = '0';
+    el.style.background = 'rgba(255,0,0,0.3)';
+    setTimeout(() => { el.remove(); activeEvents = activeEvents.filter(e => e !== el); }, 300);
+    showFloatingText(penalty.toString(), '#ff6b6b', el.style.left || el.style.right, el.style.top || el.style.bottom);
+    if (cleanup) cleanup();
+  }, ms);
+}
+
+function showFloatingText(text, color, x, y) {
+  const ft = document.createElement('div');
+  ft.textContent = text;
+  ft.style.cssText = `
+    position:absolute; z-index:30; font-size:16px; font-weight:bold; color:${color};
+    pointer-events:none; left:50%; top:40%;
+    animation: floatUp 1s ease-out forwards;
+  `;
+  document.getElementById('roomLevel').appendChild(ft);
+  setTimeout(() => ft.remove(), 1000);
+}
+
+function clearActiveEvents() {
+  activeEvents.forEach(el => {
+    clearTimeout(el._failTimer);
+    clearInterval(el._countdownInterval);
+    el.remove();
+  });
+  activeEvents = [];
+  // Remove any lightning
+  document.querySelectorAll('.lightning').forEach(l => l.remove());
+}
+
+// ===== Dream Events =====
+function triggerDreamEvent(type) {
+  const container = document.getElementById('dreamEvents');
+  container.innerHTML = '';
+  let el;
+
+  switch(type) {
+    case 'shadow':
+      el = document.createElement('div');
+      el.className = 'event-popup';
+      el.style.cssText = 'top:30%;left:10%;';
+      el.innerHTML = `
+        <div class="shadow-figure">&#128126;</div>
+        <div class="event-hint" style="bottom:-25px">Click 5 times to dispel!</div>
+      `;
+      let clicks = 0;
+      el.onclick = () => {
+        clicks++;
+        el.querySelector('.shadow-figure').style.opacity = 1 - clicks * 0.18;
+        if (clicks >= 5) {
+          el.style.transition = 'all 0.5s';
+          el.style.opacity = '0';
+          el.style.transform = 'scale(0)';
+          setTimeout(() => el.remove(), 500);
+        }
+      };
+      break;
+
+    case 'star':
+      el = document.createElement('div');
+      el.className = 'event-popup';
+      el.style.cssText = 'top:20%;right:25%;cursor:grab;';
+      el.innerHTML = `
+        <div class="falling-star">&#11088;</div>
+        <div class="event-hint" style="bottom:-25px">Drag star back up!</div>
+      `;
+      el.onclick = () => {
+        el.style.transition = 'all 0.8s';
+        el.style.top = '5%';
+        el.style.opacity = '0';
+        setTimeout(() => el.remove(), 800);
+      };
+      break;
+
+    case 'monster':
+      el = document.createElement('div');
+      el.className = 'event-popup';
+      el.style.cssText = 'top:35%;right:5%;';
+      el.innerHTML = `
+        <div class="dream-monster-sprite">&#128122;</div>
+        <div class="event-hint" style="bottom:-25px">Drag bottle to feed!</div>
+      `;
+      el.onclick = () => {
+        el.querySelector('.dream-monster-sprite').style.transition = 'all 0.5s';
+        el.querySelector('.dream-monster-sprite').style.transform = 'scale(0.2)';
+        el.querySelector('.dream-monster-sprite').textContent = '&#128054;';
+        setTimeout(() => el.remove(), 800);
+      };
+      break;
+
+    case 'lullaby':
+      el = document.createElement('div');
+      el.className = 'event-popup';
+      el.style.cssText = 'top:20%;left:10%;width:80%;';
+      const notes = ['&#9835;', '&#9834;', '&#9833;', '&#9839;'];
+      const order = [2, 0, 3, 1]; // correct click order
+      el.innerHTML = `
+        <div class="music-notes" style="justify-content:space-around;">
+          ${notes.map((n, i) => `<span class="music-note" data-idx="${i}" style="animation:float ${1+i*0.3}s infinite; color:hsl(${i*60+200},80%,70%)">${n}</span>`).join('')}
+        </div>
+        <div class="event-hint" style="bottom:-25px;left:30%">Click notes in order: 3,1,4,2</div>
+      `;
+      let step = 0;
+      el.querySelectorAll('.music-note').forEach(note => {
+        note.onclick = (e) => {
+          e.stopPropagation();
+          const idx = parseInt(note.dataset.idx);
+          if (idx === order[step]) {
+            note.classList.add('clicked');
+            step++;
+            if (step >= order.length) {
+              setTimeout(() => el.remove(), 500);
+            }
+          }
+        };
+      });
+      break;
+  }
+
+  if (el) container.appendChild(el);
+}
+
+// ===== Result Panel =====
+function showResult(success) {
+  clearInterval(timerInterval);
+  const overlay = document.getElementById('roomResult');
+  const title = document.getElementById('resultTitle');
+  const stars = document.getElementById('resultStars');
+  const info = document.getElementById('resultInfo');
+  const nextBtn = document.getElementById('nextBtn');
+
+  overlay.classList.add('active');
+
+  if (success) {
+    title.textContent = 'Baby is Asleep!';
+    title.className = 'result-title success';
+    const starCount = sleepValue >= 80 ? 3 : sleepValue >= 50 ? 2 : 1;
+    stars.innerHTML = getStarStr(starCount);
+    info.textContent = `Sleep Quality: ${sleepValue}%`;
+    nextBtn.style.display = 'inline-block';
+  } else {
+    title.textContent = 'Baby Woke Up!';
+    title.className = 'result-title fail';
+    stars.innerHTML = '<span style="font-size:50px">&#128557;</span>';
+    info.textContent = 'The baby started crying...';
+    nextBtn.style.display = 'none';
+  }
+}
+
+function hideResult() {
+  document.getElementById('roomResult').classList.remove('active');
+}
+
+// ===== Float Up Animation =====
+const style = document.createElement('style');
+style.textContent = `@keyframes floatUp { 0% { opacity:1; transform:translateY(0); } 100% { opacity:0; transform:translateY(-40px); } }`;
+document.head.appendChild(style);
+
+// ===== Init =====
+createMenuStars();
+createDreamStars();
+</script>
+
+</body>
+</html>
