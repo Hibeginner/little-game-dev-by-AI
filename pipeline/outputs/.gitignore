@@ -1,0 +1,3 @@
+# 忽略所有运行时产物，只保留 .gitignore 本身
+*
+!.gitignore

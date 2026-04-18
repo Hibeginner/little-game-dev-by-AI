@@ -1,0 +1,11 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permission": "allow",
+  "mcp": {
+    "cocos_creator": {
+        "enabled": true,
+        "type": "remote",
+        "url": "http://localhost:56666/mcp"
+    }
+  }
+}
