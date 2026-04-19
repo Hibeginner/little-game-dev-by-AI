@@ -1,0 +1,145 @@
+{
+  "style": "占位图风格：纯色块 + 文字标签。所有资源使用 Cocos Creator 内置 Sprite（纯色）和 Label 组件实现，不依赖外部图片文件。prompt_hint 字段为后续 AI 生图预留，本轮不使用。",
+  "assets": [
+    {
+      "id": "bg_menu",
+      "description": "主菜单背景，深蓝色全屏纯色，营造夜晚安静氛围",
+      "category": "background",
+      "size": "1280x720",
+      "prompt_hint": "dark blue night sky background, soft gradient, calm peaceful atmosphere, minimal stars, mobile game UI background, flat illustration style"
+    },
+    {
+      "id": "bg_room",
+      "description": "房间背景，浅米色全屏纯色，代表温馨的婴儿房",
+      "category": "background",
+      "size": "1280x720",
+      "prompt_hint": "cozy baby nursery room interior, warm beige walls, soft lighting, nightstand beside crib, window with curtains, top-down 2D flat illustration, pastel colors, cute cartoon style"
+    },
+    {
+      "id": "bed",
+      "description": "婴儿床，深棕色矩形色块，屏幕下半部居中，宽250高80",
+      "category": "item",
+      "size": "250x80",
+      "prompt_hint": "cute baby crib top view, wooden frame, white bedding, small pillow, flat 2D illustration, cartoon style, pastel colors"
+    },
+    {
+      "id": "baby_sleep",
+      "description": "宝宝安睡状态，用 😴 表情文字占位。后续替换为Q版宝宝闭眼安睡的4帧循环动画",
+      "category": "character",
+      "size": "128x128",
+      "prompt_hint": "cute cartoon baby sleeping peacefully, closed eyes, small smile, wrapped in blanket, chibi style, soft pastel colors, transparent background"
+    },
+    {
+      "id": "baby_uneasy",
+      "description": "宝宝不安状态，用 😟 表情文字占位。后续替换为Q版宝宝皱眉翻身的动画",
+      "category": "character",
+      "size": "128x128",
+      "prompt_hint": "cute cartoon baby slightly disturbed, frowning, tossing in sleep, chibi style, soft pastel colors, transparent background"
+    },
+    {
+      "id": "baby_distressed",
+      "description": "宝宝痛苦状态，用 😫 表情文字占位。后续替换为Q版宝宝即将哭醒的表情",
+      "category": "character",
+      "size": "128x128",
+      "prompt_hint": "cute cartoon baby about to cry, eyes squeezed shut, mouth trembling, chibi style, soft pastel colors, transparent background"
+    },
+    {
+      "id": "baby_cry",
+      "description": "宝宝哭醒状态，用 😭 表情文字占位。后续替换为Q版宝宝大哭的动画",
+      "category": "character",
+      "size": "128x128",
+      "prompt_hint": "cute cartoon baby crying loudly, tears streaming, mouth wide open, chibi style, soft pastel colors, transparent background"
+    },
+    {
+      "id": "phone",
+      "description": "手机事件节点，蓝色矩形140x160 + 📱文字 + '长按'提示。后续替换为手机震动的帧动画",
+      "category": "item",
+      "size": "140x160",
+      "prompt_hint": "cartoon smartphone vibrating, screen glowing, motion lines around it, flat 2D illustration, cute style, transparent background"
+    },
+    {
+      "id": "alarm_clock",
+      "description": "闹钟事件节点，红色矩形140x140 + ⏰文字 + '点击'提示。后续替换为闹钟震动的帧动画",
+      "category": "item",
+      "size": "140x140",
+      "prompt_hint": "cartoon alarm clock ringing, bells shaking, motion lines, red classic alarm clock, flat 2D illustration, cute style, transparent background"
+    },
+    {
+      "id": "btn_start",
+      "description": "开始按钮，绿色圆角矩形 + '开始'白色文字",
+      "category": "ui",
+      "size": "200x60",
+      "prompt_hint": "green rounded rectangle button, glossy, soft shadow, mobile game UI element, flat design"
+    },
+    {
+      "id": "btn_replay",
+      "description": "重玩按钮，蓝色圆角矩形 + '重玩'白色文字",
+      "category": "ui",
+      "size": "160x50",
+      "prompt_hint": "blue rounded rectangle button, glossy, soft shadow, mobile game UI element, flat design"
+    },
+    {
+      "id": "btn_menu",
+      "description": "回主菜单按钮，灰色圆角矩形 + '主菜单'白色文字",
+      "category": "ui",
+      "size": "160x50",
+      "prompt_hint": "gray rounded rectangle button, glossy, soft shadow, mobile game UI element, flat design"
+    },
+    {
+      "id": "sleep_bar_bg",
+      "description": "安睡度进度条背景，深灰色长条矩形，宽300高24",
+      "category": "ui",
+      "size": "300x24",
+      "prompt_hint": "dark gray progress bar background, rounded ends, flat UI element"
+    },
+    {
+      "id": "sleep_bar_fill",
+      "description": "安睡度进度条填充，绿色到红色渐变，使用 ProgressBar 组件控制",
+      "category": "ui",
+      "size": "300x24",
+      "prompt_hint": "green to red gradient progress bar fill, rounded ends, health bar style, flat UI element"
+    },
+    {
+      "id": "progress_bar_bg",
+      "description": "长按操作进度条背景，深灰细条，宽120高12",
+      "category": "ui",
+      "size": "120x12",
+      "prompt_hint": "small dark gray progress bar background, thin, rounded ends, flat UI element"
+    },
+    {
+      "id": "progress_bar_fill",
+      "description": "长按操作进度条填充，白色细条",
+      "category": "ui",
+      "size": "120x12",
+      "prompt_hint": "white progress bar fill, thin, rounded ends, glowing, flat UI element"
+    },
+    {
+      "id": "time_bar_bg",
+      "description": "事件时间窗口倒计时条背景，深灰细条，宽120高8",
+      "category": "ui",
+      "size": "120x8",
+      "prompt_hint": "small dark gray timer bar background, very thin, rounded ends, flat UI element"
+    },
+    {
+      "id": "time_bar_fill",
+      "description": "事件时间窗口倒计时条填充，黄色细条，随时间缩短",
+      "category": "ui",
+      "size": "120x8",
+      "prompt_hint": "yellow timer bar fill, very thin, rounded ends, countdown style, flat UI element"
+    },
+    {
+      "id": "panel_result",
+      "description": "结算面板背景，白色圆角矩形，宽400高300，带半透明黑色遮罩",
+      "category": "ui",
+      "size": "400x300",
+      "prompt_hint": "white rounded rectangle panel, soft shadow, clean mobile game result popup, flat design"
+    },
+    {
+      "id": "title_text",
+      "description": "主菜单标题 'Baby Sleep'，大号白色文字，fontSize=72，使用 Label 组件",
+      "category": "ui",
+      "size": "400x100",
+      "prompt_hint": "Baby Sleep game logo text, cute rounded font, white text with soft glow, dreamy night theme"
+    }
+  ]
+}

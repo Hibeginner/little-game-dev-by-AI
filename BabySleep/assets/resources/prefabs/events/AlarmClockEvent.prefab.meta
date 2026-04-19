@@ -1,0 +1,14 @@
+{
+  "ver": "1.1.50",
+  "importer": "prefab",
+  "imported": true,
+  "uuid": "a5a9a450-5402-411d-8b59-d7921cbf9f1d",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {},
+  "userData": {
+    "syncNodeName": "AlarmClockEvent",
+    "hasIcon": false
+  }
+}

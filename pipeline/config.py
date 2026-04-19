@@ -2,7 +2,8 @@ from enum import Enum
 
 
 class Model(str, Enum):
-    CLAUDE_OPUS = "netease-codemaker/claude-opus-4-6"
+    CLAUDE_OPUS_4_6 = "netease-codemaker/claude-opus-4-6"
+    CLAUDE_OPUS_4_7 = "netease-codemaker/claude-opus-4-7"
     QWEN_36_PLUS = "netease-codemaker/qwen3.6-plus"
 
 
